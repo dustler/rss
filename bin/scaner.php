@@ -41,6 +41,7 @@ foreach ($resources as $resource) {
         $newItem = new App\Model\Item();
         $newItem->setResourceId($resourceId)
             ->setLink($item->getId())
+            ->setContent($item->getContent())
             ->setPubDate(new DateTime(date("Y-m-d H:i:s", $itemPubDate)))
             ->setCreatedAt(new DateTime('now'));
 

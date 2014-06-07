@@ -12,8 +12,9 @@ $config = Setup::createAnnotationMetadataConfiguration(array(__DIR__ . "/src/App
 $conn = array(
     'driver'   => 'pdo_mysql',
     'user'     => 'root',
-    'password' => '',
+    'password' => '1',
     'dbname'   => 'rss',
+    'charset'  => 'utf8'
 );
 
 $entityManager = EntityManager::create($conn, $config);

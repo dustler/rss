@@ -32,29 +32,33 @@ $amqpConnection = new \PhpAmqpLib\Connection\AMQPConnection(
 
 $channel = $amqpConnection->channel();
 
-$echangeName = 'amq.direct';
+$exchangeName = 'amq.topic';
 
-$channel->exchange_declare($echangeName, 'direct', false, true, false);
+$channel->exchange_declare($exchangeName, 'topic', false, true, false);
 
 /**
  * @var App\Model\Item $item
  */
 foreach ($items as $item) {
+    $resourceId = $item->getResourceId();
+    $resource = $entityManager->find("\\App\\Model\\Resource", $resourceId);
+    $tasks = $entityManager->getRepository("\\App\\Model\\Task")->findBy(array(
+        "url" => $resource->getLink(),
+    ));
+
     $url = $item->getLink();
 
     $message = array(
-        'title' => 'title',
-        'timestamp' => time(),
-        'payload' => array(
-            "url" => $url,
-        ),
-        'initiator' => 'rssreader',
-        'target' => 'evernote',
+        "url" => $url,
     );
 
-    $amqpMessage = new \PhpAmqpLib\Message\AMQPMessage(json_encode($message));
-    $channel->basic_publish($amqpMessage, $echangeName, 'evernote', true);
-    echo "send message\n";
+    foreach ($tasks as $task) {
+        $message['taskId'] = $task->getTaskId();
+        $amqpMessage = new \PhpAmqpLib\Message\AMQPMessage(json_encode($message));
+        $channel->basic_publish($amqpMessage, $exchangeName, 'manager.rss', true);
+        echo "send message\n";
+        echo print_r($message, true) . "\n";
+    }
 }
 
 $reader->setLastCheckTime(new DateTime('now'));
